@@ -16,3 +16,8 @@ Feel free to start doing these in any order you like.
 #### Development Setup
 1. If you have Node.js locally, you should run these on your machine 
 2. If you don't, you can copy these over to repl.it and run it there. Tests wont be automated there so you will have to make use judgement to ensure if your code is correct
+
+#### Additional Assignments
+1. Create a counter in Javascript (counts down from 30 to 0)
+2. Calculate the time it takes between a setTimeout call and the inner function actually running
+3. Create a terminal clock (HH:MM:SS)
