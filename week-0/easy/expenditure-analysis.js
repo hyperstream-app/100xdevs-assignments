@@ -14,7 +14,20 @@
 */
 
 function calculateTotalSpentByCategory(transactions) {
-  return [];
+  let output = [];
+
+  transactions.forEach((transaction) => {
+    const { category, price } = transaction;
+    let item = output.find((item) => item.category === category); // Taken help from ChatGPT
+
+    if (item) {
+      item.totalSpent += price;
+    } else {
+      output.push({ category, totalSpent: price });
+    }
+  });
+
+  return output;
 }
 
 module.exports = calculateTotalSpentByCategory;

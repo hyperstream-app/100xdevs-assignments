@@ -6,7 +6,9 @@
 */
 
 function countVowels(str) {
-    // Your code here
+  let originalLen = str.length;
+  str = str.toLowerCase().replace(/(a|e|i|o|u)/g, "");
+  return originalLen - str.length;
 }
 
 module.exports = countVowels;
