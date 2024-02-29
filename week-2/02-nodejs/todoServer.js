@@ -41,12 +41,10 @@
  */
 
 const express = require("express");
-const z = require("zod");
-const { v4: uuidv4 } = require("uuid");
 const app = express();
-
-/* Todo Database */
-let todos = [];
+const z = require("zod");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 /* Middlewares */
 function validateTodoId(req, res, next) {
@@ -73,21 +71,26 @@ function validateTodoData(req, res, next) {
   next();
 }
 
+/* Utility */
+const getTodos = () => JSON.parse(fs.readFileSync("./todos.json", "utf-8"));
+
 app.use(express.json());
 
 app.get("/todos", (_, res) => {
+  let todos = getTodos();
   return res.status(200).json(todos);
 });
 
 app.get("/todos/:id", validateTodoId, (req, res) => {
+  let todos = getTodos();
   const [todo] = todos.filter((todo) => req.params.id === todo.id);
 
   if (!todo) return res.status(404).send("404 Not Found");
-  console.log(todo.id);
   return res.status(200).json({ id: todo.id });
 });
 
 app.post("/todos", validateTodoData, (req, res) => {
+  let todos = getTodos();
   const { title, description } = req.body;
   const id = uuidv4();
 
@@ -97,19 +100,23 @@ app.post("/todos", validateTodoData, (req, res) => {
     description,
   });
 
+  fs.writeFileSync("./todos.json", JSON.stringify(todos), "utf-8");
+
   return res.status(201).json({ id });
 });
 
 app.delete("/todos/:id", validateTodoId, (req, res) => {
+  let todos = getTodos();
   let newTodos = todos.filter((todo) => todo.id !== req.params.id);
   if (newTodos.length === todos.length)
     return res.status(404).send("Todo not found");
 
-  todos = newTodos;
+  fs.writeFileSync("./todos.json", JSON.stringify(newTodos), "utf-8");
   return res.status(200).send("Todo has been deleted");
 });
 
 app.put("/todos/:id", validateTodoId, validateTodoData, (req, res) => {
+  let todos = getTodos();
   let newTodos = todos.filter((todo) => todo.id !== req.params.id);
   if (newTodos.length === todos.length)
     return res.status(404).send("Todo not found");
@@ -121,6 +128,8 @@ app.put("/todos/:id", validateTodoId, validateTodoData, (req, res) => {
       if (req.body.completed) todo.completed = req.body.completed;
     }
   });
+
+  fs.writeFileSync("./todos.json", JSON.stringify(todos), "utf-8");
   res.status(200).send("Todo has been updated");
 });
 
