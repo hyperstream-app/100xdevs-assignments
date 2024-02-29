@@ -46,14 +46,7 @@ const { v4: uuidv4 } = require("uuid");
 const app = express();
 
 /* Todo Database */
-let todos = [
-  {
-    _id: "f0e0d6e5-2e53-4b1a-8f99-d44261c5193c",
-    title: "Title 1",
-    completed: false,
-    description: "Description 1",
-  },
-];
+let todos = [];
 
 /* Middlewares */
 function validateTodoId(req, res, next) {
@@ -66,12 +59,12 @@ function validateTodoId(req, res, next) {
 function validateTodoData(req, res, next) {
   const schema = z.object({
     title:
-      req.method === "POST" ? z.optional(z.string().min(5)) : z.string().min(5),
-    completed: req.method === "POST" ? z.boolean() : z.optional(z.boolean()),
+      req.method === "POST" ? z.string().min(5) : z.optional(z.string().min(5)),
+    completed: z.optional(z.boolean()),
     description:
       req.method === "POST"
-        ? z.optional(z.string().min(10))
-        : z.string().min(10),
+        ? z.string().min(10)
+        : z.optional(z.string().min(10)),
   });
 
   const { success } = schema.safeParse(req.body);
@@ -87,28 +80,28 @@ app.get("/todos", (_, res) => {
 });
 
 app.get("/todos/:id", validateTodoId, (req, res) => {
-  const todo = todos.filter((todo) => req.params.id === todo._id);
+  const [todo] = todos.filter((todo) => req.params.id === todo.id);
 
   if (!todo) return res.status(404).send("404 Not Found");
-  return res.status(200).json(todo);
+  console.log(todo.id);
+  return res.status(200).json({ id: todo.id });
 });
 
 app.post("/todos", validateTodoData, (req, res) => {
-  const { title, description, completed } = req.body;
-  const _id = uuidv4();
+  const { title, description } = req.body;
+  const id = uuidv4();
 
   todos.push({
-    _id,
+    id,
     title,
-    completed,
     description,
   });
 
-  return res.status(201).json({ id: _id });
+  return res.status(201).json({ id });
 });
 
 app.delete("/todos/:id", validateTodoId, (req, res) => {
-  let newTodos = todos.filter((todo) => todo._id !== req.params.id);
+  let newTodos = todos.filter((todo) => todo.id !== req.params.id);
   if (newTodos.length === todos.length)
     return res.status(404).send("Todo not found");
 
@@ -117,8 +110,12 @@ app.delete("/todos/:id", validateTodoId, (req, res) => {
 });
 
 app.put("/todos/:id", validateTodoId, validateTodoData, (req, res) => {
+  let newTodos = todos.filter((todo) => todo.id !== req.params.id);
+  if (newTodos.length === todos.length)
+    return res.status(404).send("Todo not found");
+
   todos.forEach((todo) => {
-    if (todo._id === req.params.id) {
+    if (todo.id === req.params.id) {
       if (req.body.title) todo.title = req.body.title;
       if (req.body.description) todo.description = req.body.description;
       if (req.body.completed) todo.completed = req.body.completed;
@@ -130,7 +127,5 @@ app.put("/todos/:id", validateTodoId, validateTodoData, (req, res) => {
 app.all("*", (_, res) => {
   res.status(404).send("Route not found");
 });
-
-app.listen(3000);
 
 module.exports = app;
