@@ -39,11 +39,98 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+
+const express = require("express");
+const z = require("zod");
+const { v4: uuidv4 } = require("uuid");
+const app = express();
+
+/* Todo Database */
+let todos = [
+  {
+    _id: "f0e0d6e5-2e53-4b1a-8f99-d44261c5193c",
+    title: "Title 1",
+    completed: false,
+    description: "Description 1",
+  },
+];
+
+/* Middlewares */
+function validateTodoId(req, res, next) {
+  const { success } = z.string().uuid().safeParse(req.params.id);
+  if (!success) return res.send(404).json({ error: "Non-existent ID" });
+
+  next();
+}
+
+function validateTodoData(req, res, next) {
+  const schema = z.object({
+    title:
+      req.method === "POST" ? z.optional(z.string().min(5)) : z.string().min(5),
+    completed: req.method === "POST" ? z.boolean() : z.optional(z.boolean()),
+    description:
+      req.method === "POST"
+        ? z.optional(z.string().min(10))
+        : z.string().min(10),
+  });
+
+  const { success } = schema.safeParse(req.body);
+  if (!success) return res.status(404).send({ error: "Invalid inputs" });
+
+  next();
+}
+
+app.use(express.json());
+
+app.get("/todos", (_, res) => {
+  return res.status(200).json(todos);
+});
+
+app.get("/todos/:id", validateTodoId, (req, res) => {
+  const todo = todos.filter((todo) => req.params.id === todo._id);
+
+  if (!todo) return res.status(404).send("404 Not Found");
+  return res.status(200).json(todo);
+});
+
+app.post("/todos", validateTodoData, (req, res) => {
+  const { title, description, completed } = req.body;
+  const _id = uuidv4();
+
+  todos.push({
+    _id,
+    title,
+    completed,
+    description,
+  });
+
+  return res.status(201).json({ id: _id });
+});
+
+app.delete("/todos/:id", validateTodoId, (req, res) => {
+  let newTodos = todos.filter((todo) => todo._id !== req.params.id);
+  if (newTodos.length === todos.length)
+    return res.status(404).send("Todo not found");
+
+  todos = newTodos;
+  return res.status(200).send("Todo has been deleted");
+});
+
+app.put("/todos/:id", validateTodoId, validateTodoData, (req, res) => {
+  todos.forEach((todo) => {
+    if (todo._id === req.params.id) {
+      if (req.body.title) todo.title = req.body.title;
+      if (req.body.description) todo.description = req.body.description;
+      if (req.body.completed) todo.completed = req.body.completed;
+    }
+  });
+  res.status(200).send("Todo has been updated");
+});
+
+app.all("*", (_, res) => {
+  res.status(404).send("Route not found");
+});
+
+app.listen(3000);
+
+module.exports = app;
