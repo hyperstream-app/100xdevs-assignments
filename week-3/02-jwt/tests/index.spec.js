@@ -3,7 +3,7 @@ const {
   signJwt,
   verifyJwt,
   decodeJwt,
-  jwtPassword
+  jwtSecret
 } = require('../');
 
 describe('signJwt', () => {
@@ -33,7 +33,7 @@ describe('decodeJwt', () => {
 	});
 
 	test('decodes a jwt with same password correctly', () => {
-		const token = jwt.sign({ username: 'kirat@gmail.com', password: '123456' }, jwtPassword);
+		const token = jwt.sign({ username: 'kirat@gmail.com', password: '123456' }, jwtSecret);
 		const decoded = decodeJwt(token);
 		expect(decoded).toBe(true);
 	});
@@ -53,7 +53,7 @@ describe('verifyJwt', () => {
 	});
 
 	test('decodes a jwt with same password correctly', () => {
-		const token = jwt.sign({ username: 'kirat@gmail.com', password: '123456' }, jwtPassword);
+		const token = jwt.sign({ username: 'kirat@gmail.com', password: '123456' }, jwtSecret);
 		const decoded = verifyJwt(token);
 		expect(decoded).toBe(true);
 	});
