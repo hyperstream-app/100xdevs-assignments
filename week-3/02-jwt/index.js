@@ -47,9 +47,7 @@ function verifyJwt(token) {
  *                         Returns false if the token is not a valid JWT format.
  */
 function decodeJwt(token) {
-  const decoded = jwt.decode(token);
-  if (!!decoded) return true;
-  return false;
+  return !!jwt.decode(token);
 }
 
 module.exports = {
