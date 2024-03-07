@@ -1,27 +1,35 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const { MONGODB_URI } = require("../config");
 
 // Connect to MongoDB
-mongoose.connect('your-mongodb-url');
-
-// Define schemas
-const AdminSchema = new mongoose.Schema({
-    // Schema definition here
-});
+mongoose.connect(MONGODB_URI);
 
 const UserSchema = new mongoose.Schema({
-    // Schema definition here
+  username: String,
+  password: String,
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  purchased_courses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
 });
 
 const CourseSchema = new mongoose.Schema({
-    // Schema definition here
+  title: String,
+  description: String,
+  price: Number,
+  imageLink: String,
 });
 
-const Admin = mongoose.model('Admin', AdminSchema);
-const User = mongoose.model('User', UserSchema);
-const Course = mongoose.model('Course', CourseSchema);
+const User = mongoose.model("User", UserSchema);
+const Course = mongoose.model("Course", CourseSchema);
 
 module.exports = {
-    Admin,
-    User,
-    Course
-}
+  User,
+  Course,
+};
