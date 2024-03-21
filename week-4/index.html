@@ -24,16 +24,20 @@
           }
         }
 
-        document.getElementById("todos").innerHTML = htmlContent;
+        container.innerHTML = htmlContent;
       }
 
       function updateTodoInDom(oldTodo, newTodo) {
+        console.log(oldTodo, newTodo);
         const container = document.getElementById("todos");
         let htmlContent = "";
         for (const child of container.children) {
           if (child.getAttribute("id") !== `todo-${oldTodo.id}`) {
-            htmlContent += child;
-          } else {
+            console.log(child);
+            htmlContent += child.outerHTML;
+          } else if (child.getAttribute("id") === `todo-${oldTodo.id}`) {
+            console.log(oldTodo.id, child);
+
             htmlContent += `
               <div id="todo-${oldTodo.id}">
                   <h3>${newTodo.title}</h3>
@@ -42,6 +46,9 @@
               `;
           }
         }
+
+        console.log(htmlContent);
+        container.innerHTML = htmlContent;
       }
 
       function updateState(newTodos) {
@@ -49,7 +56,6 @@
           let newTodoSet = new Set(newTodos.map((item) => item.id));
           let oldTodoSet = new Set(oldTodoState.map((item) => item.id));
           let removedId = [...oldTodoSet.difference(newTodoSet)][0];
-          console.log(removedId);
 
           oldTodoState.forEach((element) => {
             if (element.id === removedId) removeTodoFromDom(element);
@@ -72,7 +78,7 @@
               newTodos[i].title !== oldTodoState[i].title ||
               newTodos[i].description !== oldTodoState[i].description
             ) {
-              updateTodoInDom(newTodos[i], oldTodoState[i]);
+              updateTodoInDom(oldTodoState[i], newTodos[i]);
             }
           }
         }
@@ -98,19 +104,44 @@
         todoState = todoState.filter((todo) => todo.id !== randomNum);
         updateState(todoState);
       }
+
+      function updateTodo() {
+        const title = document.getElementById("utitle").value;
+        const description = document.getElementById("udescription").value;
+
+        let items = todoState.map((todo) => todo.id);
+        const randomNum = items[Math.floor(Math.random() * items.length)];
+
+        todoState = todoState.filter((todo) => todo.id !== randomNum);
+        todoState.push({ title, description, id: randomNum });
+
+        todoState.sort((a, b) => {
+          return a.id - b.id;
+        });
+
+        updateState(todoState);
+      }
     </script>
   </head>
 
   <body>
-    <input type="text" id="title" placeholder="Todo title" />
-    <br /><br />
-    <input
-      type="text"
-      id="description"
-      placeholder="Todo description"
-    /><br /><br />
-    <button onclick="addTodo()">Add todo</button>
-    <button onclick="removeTodo()">Remove random todo</button>
+    <div style="display: flex; gap: 20px">
+      <div style="display: flex; flex-direction: column; width: 20%; gap: 10px">
+        <input type="text" id="title" placeholder="Todo title" />
+        <input type="text" id="description" placeholder="Todo description" />
+        <button onclick="addTodo()">Add todo</button>
+        <button onclick="removeTodo()">Remove random todo</button>
+      </div>
+      <div style="display: flex; flex-direction: column; width: 20%; gap: 10px">
+        <input type="text" id="utitle" placeholder="Updated todo title" />
+        <input
+          type="text"
+          id="udescription"
+          placeholder="Updated todo description"
+        />
+        <button onclick="updateTodo()">Update random todo</button>
+      </div>
+    </div>
     <br />
     <br />
 
