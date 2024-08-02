@@ -7,14 +7,14 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgres://postgres:mysecretpassword@localhost/postgres"
+  url      = "postgresql://admin:0xwiDAMnt9kf@ep-bold-leaf-a5emtgwn.us-east-2.aws.neon.tech/postgres-db?sslmode=require"
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  username String   @unique
+  id       Int     @id @default(autoincrement())
+  username String
+  name     String?
   password String
-  name     String
 }
 
 model Todo {
